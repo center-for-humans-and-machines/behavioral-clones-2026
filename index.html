@@ -6,6 +6,14 @@
 <meta name="theme-color" content="#fafaf8">
 <title>Behavioral Clones Workshop 2026</title>
 <meta name="description" content="One-day workshop on AI systems that model human decision-making and social behavior — 20 May 2026, MPIB Berlin.">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BC 2026">
 <style>
   :root {
     --fg: #1a1a1a; --mute: #6a6a6a; --bg: #fafaf8; --card: #fff;
@@ -85,6 +93,53 @@
   footer { color: var(--mute); font-size: 13px; margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); }
   footer a { color: var(--accent); text-decoration: none; }
 
+  /* Install-as-app button */
+  .install-bar {
+    display: none; margin: 0 0 18px;
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 12px 14px;
+    align-items: center; gap: 12px; font-size: 14px;
+  }
+  .install-bar.visible { display: flex; }
+  .install-bar .ic { font-size: 22px; flex-shrink: 0; }
+  .install-bar .txt { flex: 1; color: var(--accent); }
+  .install-bar button {
+    padding: 8px 16px; font: inherit; font-weight: 600; font-size: 14px;
+    background: var(--accent); color: white; border: none;
+    border-radius: 8px; cursor: pointer;
+  }
+  .install-bar .dismiss {
+    background: transparent; color: var(--mute); font-weight: normal;
+    padding: 8px 6px;
+  }
+
+  /* iOS install modal */
+  .ios-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 100;
+    align-items: flex-end; justify-content: center;
+    padding: 0 16px 16px;
+  }
+  .ios-modal.open { display: flex; }
+  .ios-modal .card {
+    background: var(--card); border-radius: 14px; padding: 20px 18px;
+    max-width: 380px; width: 100%; font-size: 15px;
+  }
+  .ios-modal h3 { margin: 0 0 10px; font-size: 17px; }
+  .ios-modal p { margin: 0 0 8px; }
+  .ios-modal .step { display: flex; gap: 10px; align-items: center; margin: 8px 0; }
+  .ios-modal .step .num {
+    flex-shrink: 0; width: 22px; height: 22px;
+    border-radius: 50%; background: var(--accent); color: white;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ios-modal .close {
+    margin-top: 14px; width: 100%; padding: 10px;
+    background: var(--accent); color: white; border: none;
+    border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer;
+  }
+
   @media (min-width: 600px) {
     .hero h1 { font-size: 30px; }
     body { font-size: 17px; }
@@ -101,6 +156,24 @@
       <a href="https://machinebehavior.science/behavioral-clones-ws" target="_blank" rel="noopener">workshop home</a>
       ·
       <a href="mailto:bc2026@mpib-berlin.mpg.de">bc2026@mpib-berlin.mpg.de</a>
+    </div>
+  </div>
+
+  <div class="install-bar" id="installBar">
+    <span class="ic">📱</span>
+    <span class="txt">Add this page to your home screen for one-tap access during the workshop.</span>
+    <button id="installBtn">Install</button>
+    <button class="dismiss" id="installDismiss" aria-label="Dismiss">✕</button>
+  </div>
+
+  <div class="ios-modal" id="iosModal" role="dialog" aria-modal="true">
+    <div class="card">
+      <h3>Add to Home Screen</h3>
+      <p>To install this page as an app on iOS:</p>
+      <div class="step"><span class="num">1</span> Tap the <strong>Share</strong> icon at the bottom of Safari.</div>
+      <div class="step"><span class="num">2</span> Scroll down and pick <strong>Add to Home Screen</strong>.</div>
+      <div class="step"><span class="num">3</span> Tap <strong>Add</strong> in the top right.</div>
+      <button class="close" id="iosClose">Got it</button>
     </div>
   </div>
 
@@ -132,6 +205,54 @@
 </div>
 
 <script>
+// --- PWA install ------------------------------------------------------------
+(function () {
+  const bar = document.getElementById("installBar");
+  const btn = document.getElementById("installBtn");
+  const dismiss = document.getElementById("installDismiss");
+  const modal = document.getElementById("iosModal");
+  const modalClose = document.getElementById("iosClose");
+
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const dismissedKey = "bc2026-install-dismissed";
+  const wasDismissed = localStorage.getItem(dismissedKey) === "1";
+
+  // Already installed → don't show
+  if (isStandalone) return;
+
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!wasDismissed) bar.classList.add("visible");
+  });
+
+  // iOS: show the bar with instructions modal trigger
+  if (isIos && !wasDismissed) bar.classList.add("visible");
+
+  btn.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      bar.classList.remove("visible");
+    } else if (isIos) {
+      modal.classList.add("open");
+    }
+  });
+  dismiss.addEventListener("click", () => {
+    bar.classList.remove("visible");
+    localStorage.setItem(dismissedKey, "1");
+  });
+  modalClose.addEventListener("click", () => modal.classList.remove("open"));
+  modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+
+  window.addEventListener("appinstalled", () => bar.classList.remove("visible"));
+})();
+
 const WORKSHOP_DATE = "2026-05-20";
 
 const TIMELINE = [
