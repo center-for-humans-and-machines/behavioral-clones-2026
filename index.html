@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fafaf8">
+<title>Behavioral Clones Workshop 2026</title>
+<meta name="description" content="One-day workshop on AI systems that model human decision-making and social behavior — 20 May 2026, MPIB Berlin.">
+<style>
+  :root {
+    --fg: #1a1a1a; --mute: #6a6a6a; --bg: #fafaf8; --card: #fff;
+    --border: #e3e3e0; --accent: #2a5da8; --accent-soft: #eaf0fa;
+    --invited-bg: #fdf6e3; --invited-border: #c2922c;
+    --now-bg: #fff4d4; --now-border: #d4a226; --now-fg: #6e5210;
+    --past: #a8a8a8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--fg);
+    font-size: 16px; line-height: 1.5;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 64px; }
+
+  /* Hero */
+  .hero h1 { font-size: 24px; margin: 0 0 4px; line-height: 1.25; }
+  .hero .meta { color: var(--mute); font-size: 14px; margin-bottom: 16px; }
+  .hero a { color: var(--accent); text-decoration: none; }
+
+  /* Status banner */
+  .status {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin: 0 0 20px;
+    display: flex; align-items: center; gap: 12px; min-height: 64px;
+  }
+  .status.live { background: var(--now-bg); border-color: var(--now-border); color: var(--now-fg); }
+  .status .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    background: var(--mute);
+  }
+  .status.live .dot { background: var(--now-border); animation: pulse 1.6s infinite ease-in-out; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .status .text { flex: 1; }
+  .status .text .label {
+    font-size: 11px; letter-spacing: 0.7px; text-transform: uppercase;
+    font-weight: 600; color: var(--mute);
+  }
+  .status.live .text .label { color: var(--now-border); }
+  .status .text .now { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .status .text .next { font-size: 13px; color: var(--mute); margin-top: 2px; }
+  .status.live .text .next { color: var(--now-fg); opacity: 0.75; }
+
+  /* Schedule */
+  h2 { font-size: 17px; margin: 28px 0 10px; }
+  .schedule { list-style: none; padding: 0; margin: 0; }
+  .schedule li {
+    display: flex; gap: 14px; padding: 10px 12px;
+    border: 1px solid transparent; border-radius: 8px;
+    align-items: center;
+  }
+  .schedule li.invited { background: var(--invited-bg); }
+  .schedule li.now {
+    background: var(--now-bg); border-color: var(--now-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .schedule li.past { color: var(--past); }
+  .schedule li.past .what { color: var(--past); }
+  .schedule .time {
+    font-size: 13px; flex-shrink: 0; width: 90px;
+    color: var(--mute); font-variant-numeric: tabular-nums;
+  }
+  .schedule li.now .time { color: var(--now-fg); font-weight: 600; }
+  .schedule .what { flex: 1; font-size: 15px; }
+  .schedule .invited-name { font-weight: 600; }
+  .schedule .now-badge {
+    background: var(--now-border); color: white;
+    font-size: 10px; padding: 2px 7px; border-radius: 999px;
+    font-weight: 700; letter-spacing: 0.5px;
+    align-self: center;
+  }
+
+  /* Lede */
+  .lede { color: var(--mute); font-size: 15px; }
+
+  /* Filter */
+  .filter {
+    position: sticky; top: 0; background: var(--bg);
+    padding: 12px 0 8px; margin: 0 -16px 0; padding-left: 16px; padding-right: 16px;
+    z-index: 10;
+  }
+  .filter input {
+    width: 100%; padding: 12px 14px; font: inherit;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+    outline: none; -webkit-appearance: none;
+  }
+  .filter input:focus { border-color: var(--accent); }
+  .chips { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .chip {
+    padding: 6px 14px; border: 1px solid var(--border); background: var(--card);
+    border-radius: 999px; font-size: 13px; color: var(--mute);
+    user-select: none; cursor: pointer; white-space: nowrap;
+  }
+  .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .count { color: var(--mute); font-size: 12px; margin-top: 8px; padding-bottom: 4px; }
+
+  /* Items */
+  .item {
+    padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); margin-bottom: 8px;
+  }
+  .item.invited { background: var(--invited-bg); border-color: var(--invited-border); }
+  .item .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .item .name { font-weight: 600; font-size: 15px; }
+  .item .aff { color: var(--mute); font-size: 13px; }
+  .item .badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: 700;
+    align-self: center;
+  }
+  .item .badge.lightning { background: #fff4e0; color: #c67200; }
+  .item .badge.poster   { background: #ecf3eb; color: #4a8c5c; }
+  .item .badge.invited  { background: #fdf6e3; color: #8a6510; }
+  .item .title { margin-top: 6px; font-size: 14px; color: #333; }
+  .item .note { color: var(--mute); font-size: 12px; margin-top: 4px; font-style: italic; }
+
+  footer {
+    color: var(--mute); font-size: 13px; margin-top: 36px;
+    padding-top: 14px; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  .empty { color: var(--mute); padding: 16px; text-align: center; font-size: 14px; }
+
+  @media (min-width: 600px) {
+    .hero h1 { font-size: 30px; }
+    body { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Behavioral Clones Workshop 2026</h1>
+    <div class="meta">
+      Wednesday, 20 May 2026 · MPIB Berlin · all times CEST<br>
+      <a href="https://machinebehavior.science/behavioral-clones-ws" target="_blank" rel="noopener">workshop home</a>
+      ·
+      <a href="mailto:bc2026@mpib-berlin.mpg.de">bc2026@mpib-berlin.mpg.de</a>
+    </div>
+  </div>
+
+  <div class="status" id="status">
+    <div class="dot"></div>
+    <div class="text">
+      <div class="label" id="statusLabel">Loading…</div>
+      <div class="now" id="statusNow">—</div>
+      <div class="next" id="statusNext"></div>
+    </div>
+  </div>
+
+  <p class="lede">A one-day workshop on behavioral clones — AI systems that model human decision-making and social behavior. Three invited keynotes (Danica Dillion, Marcel Binz, Nori Jacoby) anchor the day, with contributed talks, lightning talks, and a poster session in between. We close with a panel discussion and a BBQ on the institute terrace.</p>
+
+  <h2>Schedule</h2>
+  <ul class="schedule" id="schedule"></ul>
+
+  <h2>Speakers, talks &amp; posters</h2>
+  <div class="filter">
+    <input id="q" type="search" placeholder="Search by name, affiliation, title…" autocomplete="off">
+    <div class="chips">
+      <span class="chip active" data-type="all">All</span>
+      <span class="chip" data-type="invited">Invited</span>
+      <span class="chip" data-type="talk">Talks</span>
+      <span class="chip" data-type="lightning">Lightning</span>
+      <span class="chip" data-type="poster">Posters</span>
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+  <div id="items"></div>
+
+  <footer>
+    Organising committee: Levin Brinkmann &amp; Dirk Wulff (Max Planck Institute for Human Development).
+  </footer>
+</div>
+
+<script>
+// All times are workshop-local (Berlin, CEST on 2026-05-20).
+const SCHEDULE = [
+  { start: "09:00", end: "09:20", what: "Welcome by Levin & Dirk" },
+  { start: "09:20", end: "09:50", what: "Invited talk — Danica Dillion", invited: true },
+  { start: "09:50", end: "10:10", what: "Lightning talks (block A)" },
+  { start: "10:10", end: "10:30", what: "Break" },
+  { start: "10:30", end: "11:45", what: "Contributed talks (block 1)" },
+  { start: "11:45", end: "12:05", what: "Break" },
+  { start: "12:05", end: "12:35", what: "Invited talk — Marcel Binz", invited: true },
+  { start: "12:35", end: "13:45", what: "Lunch" },
+  { start: "13:45", end: "14:10", what: "Lightning talks (block B)" },
+  { start: "14:10", end: "14:40", what: "Invited talk — Nori Jacoby", invited: true },
+  { start: "14:40", end: "15:00", what: "Break" },
+  { start: "15:00", end: "16:15", what: "Contributed talks (block 2)" },
+  { start: "16:15", end: "16:25", what: "Break" },
+  { start: "16:25", end: "17:45", what: "Poster session" },
+  { start: "17:45", end: "18:15", what: "Panel — Open Questions and the Future" },
+  { start: "18:15", end: "23:59", what: "BBQ on the institute terrace" },
+];
+const WORKSHOP_DATE = "2026-05-20"; // Berlin-local date
+
+const DATA = [
+  // Invited
+  { type: "invited", session: "09:20", name: "Danica Dillion", aff: "University of North Carolina at Chapel Hill", title: "Invited talk" },
+  { type: "invited", session: "12:05", name: "Marcel Binz", aff: "Helmholtz Munich", title: "Invited talk" },
+  { type: "invited", session: "14:10", name: "Nori Jacoby", aff: "Cornell University", title: "Invited talk" },
+  // Lightning A
+  { type: "lightning", session: "09:50 (A)", name: "Indira Sen", aff: "University of Mannheim", title: "Evaluating Generative Social Simulations" },
+  { type: "lightning", session: "09:50 (A)", name: "Jelena Meyer", aff: "Max Planck Institute for Human Development", title: "When Reliability Misleads: Psychometric Scale Directionality Inflates Apparent Consistency in LLM Scale Responses" },
+  { type: "lightning", session: "09:50 (A)", name: "Jan Pfänder", aff: "Eawag — Swiss Federal Institute of Aquatic Science and Technology", title: "Predicting the Effects of a Megastudy with Behavioral Clones" },
+  { type: "lightning", session: "09:50 (A)", name: "Daniel Relihan", aff: "University of Southern California", title: "Where Do LLM Outputs Fall Relative to Human Severity Assessments? A Distributional Calibration Framework" },
+  { type: "lightning", session: "09:50 (A)", name: "Sharif Kazemi", aff: "World Bank Group", title: "Machine-Augmented Social Simulation (MASS): A Pipeline for Validating LLM In-Silico Predictions Against Statistical Baselines in Low-Resource Contexts" },
+  // Talks 1
+  { type: "talk", session: "10:30", name: "Felipe Valencia-Clavijo", aff: "Dataplicada", title: "When Behavioral Similarity Misleads: Anchoring as a Behavioral Clone of Human Judgment in LLMs" },
+  { type: "talk", session: "10:30", name: "Valentin Kriegmair", aff: "Max Planck Institute for Human Development", title: "Machine Individuality: Multi-Level Variance Partitioning Reveals Stable Behavioral Idiosyncrasies in Large Language Models" },
+  { type: "talk", session: "10:30", name: "Faezeh Fadaei", aff: "University College Dublin", title: "Gender Dynamics and Homophily in a Social Network of LLM Agents" },
+  { type: "talk", session: "10:30", name: "Louis Schiekiera", aff: "Humboldt-Universität zu Berlin", title: "Aligning Behavioral and Hidden-State Semantic Geometry in LLMs" },
+  // Lightning B
+  { type: "lightning", session: "13:45 (B)", name: "Jessica Thompson", aff: "University of Oxford", title: "Using Behavioural Cloning to Accelerate Human Language Learning" },
+  { type: "lightning", session: "13:45 (B)", name: "Leonel Aguilar", aff: "ETH Zurich", title: "Beyond the Vessel: Ground-Truth Behavioural Traces for Foundational Models of Human Behaviour" },
+  { type: "lightning", session: "13:45 (B)", name: "Saeedeh Mohammadi", aff: "University College Dublin", title: "Bickering Machine: AI Feedback Enhances Community-Based Content Moderation Through Engagement with Counterarguments" },
+  { type: "lightning", session: "13:45 (B)", name: "Taisiia Tikhomirova", aff: "Max Planck Institute for Human Development", title: "Where Meaning Lives: Layer-Wise Accessibility of Psycholinguistic Features in Encoder and Decoder Language Models" },
+  // Talks 2
+  { type: "talk", session: "15:00", name: "Kristin Witte", aff: "Helmholtz Munich", title: "Evaluating Emotionally Loaded User-LLM Interactions Across Long Horizons" },
+  { type: "talk", session: "15:00", name: "Maxime Saxena", aff: "University College London", title: "I Think, Therefore I Speculate: Reasoning-Induced Bubbles in LLM Financial Markets" },
+  { type: "talk", session: "15:00", name: "Yannik Keller", aff: "Max Planck Institute for Human Development", title: "Improving Long-Run Group Welfare Through AI-Managed Sanctioning Institutions" },
+  { type: "talk", session: "15:00", name: "Yaomin Jiang", aff: "Max Planck Institute for Human Development", title: "Emergent Strategic Communication in Goal-Optimized Language Agents" },
+  // Posters
+  { type: "poster", session: "16:25", name: "Aaron Petrasch", aff: "LMU Munich", title: "Validating Behavioral Clones: Testing Human–Machine Judgment Alignment With Psychometrics" },
+  { type: "poster", session: "16:25", name: "Ajaykumar Manivannan", aff: "University of Leeds", title: "Generative Agent-based Modelling (GABM) Framework for Social Simulation: Understanding the Dynamics of Social Tipping When Persuaded by Two Competing Minorities" },
+  { type: "poster", session: "16:25", name: "Ali Shiravand", aff: "École Normale Supérieure", title: "NORMARL: A Multi-agent Reinforcement Learning Framework for Adaptive Social Norms in Resource Sustainability" },
+  { type: "poster", session: "16:25", name: "Beste Tasci", aff: "Helmholtz Munich", title: "Discovering Features of Human Decision-Making with Mechanistic Interpretability" },
+  { type: "poster", session: "16:25", name: "Can Demircan", aff: "Helmholtz Munich", title: "Meta-learning as a Principle for Human-like Visual Representations" },
+  { type: "poster", session: "16:25", name: "Florian Artinger", aff: "Deutsche Hochschule", title: "Efficient Predictions with Psychological AI: The Case of Recency and Satisficing" },
+  { type: "poster", session: "16:25", name: "Frederico Pedrosa", aff: "Federal University of Minas Gerais", title: "The Hierarchical Structure of Musical Affect in Humans and AI Systems" },
+  { type: "poster", session: "16:25", name: "Geoffroy Morlat", aff: "Sorbonne Université", title: "Morality is Contextual: Learning Interpretable Moral Contexts from Human Data with Probabilistic Clustering and Large Language Models" },
+  { type: "poster", session: "16:25", name: "Jamie Cummins", aff: "University of Bern", title: "Analytic Flexibility Can Undermine the Simulation of Human Responses" },
+  { type: "poster", session: "16:25", name: "Jana Gonnermann-Müller", aff: "Zuse Institute Berlin", title: "Persona Stability in LLM-Based Simulation" },
+  { type: "poster", session: "16:25", name: "Joseph Kambeitz", aff: "University of Cologne", title: "Simulating Mental Health Trajectories with LLM-Based Generative Agents under Adverse Life Events" },
+  { type: "poster", session: "16:25", name: "Lorenz Eckhard", aff: "University of Vienna", title: "Harnessing AI to Strengthen Vaccination Communication" },
+  { type: "poster", session: "16:25", name: "Luca M. Schulze Buschoff", aff: "Helmholtz Munich", title: "Can Vision Language Models Learn Intuitive Physics from Interaction?" },
+  { type: "poster", session: "16:25", name: "Ludwig Küster", aff: "HelloBetter", title: "Emotional Contagion in Human–Bot Interaction: Who Leads, Who Follows?" },
+  { type: "poster", session: "16:25", name: "Luis Mienhardt", aff: "Max Planck Institute for Human Development", title: "Is Losing the Tail Detrimental?" },
+  { type: "poster", session: "16:25", name: "Marco Pardini", aff: "University of Pisa", title: "Beyond Static Clones: An Affective Cognitive Architecture for Dynamic Machine Behavior" },
+  { type: "poster", session: "16:25", name: "Maria Alejandra Ramirez", aff: "Max Planck Institute for Evolutionary Anthropology", title: "Non-Coercive Extortion via Artificial Agents" },
+  { type: "poster", session: "16:25", name: "Max Pellert", aff: "Barcelona Supercomputing Center", title: "Large Language Models Replicate and Predict Human Cooperation Across Experiments in Game Theory" },
+  { type: "poster", session: "16:25", name: "Maximilian Kreutner", aff: "University of Mannheim", title: "PopulationBench: On the Need for Measuring Large Language Models' Ability to Model Human Behavior" },
+  { type: "poster", session: "16:25", name: "Nico Mutzner", aff: "University of Zurich", title: "Shadowing Humanity: The Limits of Synthetic Replication in Behavioral Experiments" },
+  { type: "poster", session: "16:25", name: "Nicola Milano", aff: "University of Naples Federico II", title: "Large Language Models as Simulative Agents for Neurodivergent Adult Psychometric Profiles" },
+  { type: "poster", session: "16:25", name: "Noah Schuster", aff: "University of Bath", title: "From Human Entrepreneurs to Behavioral Clones: Simulating Entrepreneurial Decision-Making" },
+  { type: "poster", session: "16:25", name: "Raluca Rilla", aff: "Max Planck Institute for Human Development", title: "Modeling LLM Pollution in Online Behavioral Studies" },
+  { type: "poster", session: "16:25", name: "Roya Esfandiari", aff: "BI Norwegian Business School", title: "Do Large Language Models Share Human Collective Blind Spots? Implications for Using LLMs as Human Participants" },
+  { type: "poster", session: "16:25", name: "Ruggero Marino Lazzaroni", aff: "University of Graz", title: "Cog-Psych-Bench: A Benchmark for Large Language Models Performing Cognitive Psychology Decision Tasks" },
+  { type: "poster", session: "16:25", name: "Ryutaro Mori", aff: "University of Tokyo", title: "Comparing Cooperative Behavior of Large Language Models and Humans in Voluntary Participation Public Goods Games", note: "Presenting on behalf of co-author Ilya Horiguchi." },
+  { type: "poster", session: "16:25", name: "Tobias Rieger", aff: "TU Berlin", title: "Do LLM Agents Exhibit Algorithm Appreciation or Algorithm Aversion?" },
+  { type: "poster", session: "16:25", name: "Tsz Kwan Wong", aff: "University of Warwick", title: "Human vs. Large Language Model-Based Sampling: Evidence from Large-Scale Replications" },
+  { type: "poster", session: "16:25", name: "Yannik Keller", aff: "Max Planck Institute for Human Development", title: "Strategic Communication in Social Deduction Games Through Behavioral Cloning and Reinforcement Learning" },
+];
+
+// --- Berlin-time helpers ----------------------------------------------------
+function berlinNow() {
+  // Returns a {dateStr, minutesOfDay} for "now" in Europe/Berlin, regardless of user TZ.
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map(p => [p.type, p.value]));
+  const dateStr = `${parts.year}-${parts.month}-${parts.day}`;
+  const minutes = parseInt(parts.hour, 10) * 60 + parseInt(parts.minute, 10);
+  return { dateStr, minutes };
+}
+function hmToMin(hm) {
+  const [h, m] = hm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// --- Render schedule + status ----------------------------------------------
+function renderSchedule() {
+  const { dateStr, minutes } = berlinNow();
+  const isToday = dateStr === WORKSHOP_DATE;
+  const isBefore = dateStr < WORKSHOP_DATE;
+  const isAfter = dateStr > WORKSHOP_DATE;
+
+  const status = document.getElementById("status");
+  const label = document.getElementById("statusLabel");
+  const now = document.getElementById("statusNow");
+  const next = document.getElementById("statusNext");
+
+  const schedEl = document.getElementById("schedule");
+  schedEl.innerHTML = "";
+
+  let currentIdx = -1;
+  if (isToday) {
+    for (let i = 0; i < SCHEDULE.length; i++) {
+      const s = SCHEDULE[i];
+      if (minutes >= hmToMin(s.start) && minutes < hmToMin(s.end)) {
+        currentIdx = i;
+        break;
+      }
+    }
+  }
+
+  SCHEDULE.forEach((s, i) => {
+    const li = document.createElement("li");
+    if (s.invited) li.classList.add("invited");
+    if (isToday) {
+      if (i === currentIdx) li.classList.add("now");
+      else if (minutes >= hmToMin(s.end)) li.classList.add("past");
+    }
+    const inner = `
+      <span class="time">${s.start}${s.end !== "23:59" ? " – " + s.end : " –"}</span>
+      <span class="what">${s.invited ? `<span class="invited-name">${s.what}</span>` : s.what}</span>
+      ${i === currentIdx ? '<span class="now-badge">NOW</span>' : ''}
+    `;
+    li.innerHTML = inner;
+    schedEl.appendChild(li);
+  });
+
+  // Status banner
+  if (isBefore) {
+    const days = Math.ceil((new Date(WORKSHOP_DATE) - new Date(dateStr)) / 86400000);
+    status.classList.remove("live");
+    label.textContent = "Coming up";
+    now.textContent = days === 1 ? "Tomorrow" : `In ${days} days`;
+    next.textContent = "Wed 20 May 2026, 09:00 CEST · MPIB Berlin";
+  } else if (isAfter) {
+    status.classList.remove("live");
+    label.textContent = "Workshop";
+    now.textContent = "Concluded";
+    next.textContent = "Thank you for joining. See you at the next event.";
+  } else if (currentIdx === -1) {
+    // It's today but before 09:00 or after BBQ-start (after 18:15 won't trigger since BBQ runs til 23:59)
+    status.classList.remove("live");
+    if (minutes < hmToMin(SCHEDULE[0].start)) {
+      const mLeft = hmToMin(SCHEDULE[0].start) - minutes;
+      label.textContent = "Starts today";
+      now.textContent = `In ${mLeft} min`;
+      next.textContent = `${SCHEDULE[0].start} — ${SCHEDULE[0].what}`;
+    } else {
+      label.textContent = "Workshop";
+      now.textContent = "Concluded";
+      next.textContent = "Thank you for joining.";
+    }
+  } else {
+    status.classList.add("live");
+    const s = SCHEDULE[currentIdx];
+    const nx = SCHEDULE[currentIdx + 1];
+    label.textContent = "Live now";
+    now.textContent = s.what;
+    if (nx) {
+      next.textContent = `Next, ${nx.start}: ${nx.what}`;
+    } else {
+      next.textContent = "(last block of the day)";
+    }
+  }
+}
+
+// --- Filter / list ----------------------------------------------------------
+const TYPE_LABEL = { invited: "Invited", talk: "Talk", lightning: "Lightning", poster: "Poster" };
+const TYPE_ORDER = { invited: 0, talk: 1, lightning: 2, poster: 3 };
+let activeType = "all";
+let query = "";
+
+function renderList() {
+  const q = query.trim().toLowerCase();
+  const matches = DATA.filter(d => {
+    if (activeType !== "all" && d.type !== activeType) return false;
+    if (!q) return true;
+    return (d.name + " " + d.aff + " " + d.title).toLowerCase().includes(q);
+  });
+  matches.sort((a, b) => {
+    if (TYPE_ORDER[a.type] !== TYPE_ORDER[b.type]) return TYPE_ORDER[a.type] - TYPE_ORDER[b.type];
+    if (a.session !== b.session) return a.session.localeCompare(b.session);
+    return a.name.localeCompare(b.name);
+  });
+  const el = document.getElementById("items");
+  if (!matches.length) {
+    el.innerHTML = '<div class="empty">No matches.</div>';
+  } else {
+    el.innerHTML = matches.map(d => `
+      <div class="item ${d.type === 'invited' ? 'invited' : ''}">
+        <div class="head">
+          <span class="badge ${d.type}">${TYPE_LABEL[d.type]}</span>
+          <span class="name">${escapeHtml(d.name)}</span>
+          <span class="aff">${escapeHtml(d.aff)}</span>
+        </div>
+        ${d.type === 'invited' ? '' : `<div class="title">${escapeHtml(d.title)}</div>`}
+        ${d.note ? `<div class="note">${escapeHtml(d.note)}</div>` : ''}
+      </div>
+    `).join("");
+  }
+  document.getElementById("count").textContent = `${matches.length} of ${DATA.length}`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+document.getElementById("q").addEventListener("input", e => {
+  query = e.target.value;
+  renderList();
+});
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    activeType = chip.dataset.type;
+    renderList();
+  });
+});
+
+renderSchedule();
+renderList();
+// Update the live-now state every minute
+setInterval(renderSchedule, 60_000);
+</script>
+</body>
+</html>
