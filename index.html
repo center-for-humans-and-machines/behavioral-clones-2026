@@ -90,6 +90,24 @@
   .slot .body .item .title { font-size: 14px; color: #2a2a2a; margin-top: 3px; }
   .slot .body .item .note { color: var(--mute); font-size: 12px; font-style: italic; margin-top: 3px; }
 
+  /* Nested item-with-abstract: each item is its own collapsible */
+  .slot .body details.item { padding: 0; }
+  .slot .body details.item > summary {
+    list-style: none; cursor: pointer; padding: 10px 0;
+    display: block; position: relative;
+  }
+  .slot .body details.item > summary::-webkit-details-marker { display: none; }
+  .slot .body details.item > summary::after {
+    content: "›"; position: absolute; right: 2px; top: 12px;
+    color: var(--mute); font-size: 16px; transition: transform 0.18s;
+  }
+  .slot .body details.item[open] > summary::after { transform: rotate(90deg); }
+  .slot .body details.item > summary .title { padding-right: 22px; }
+  .slot .body details.item > .abstract {
+    padding: 4px 0 12px; font-size: 13.5px; color: #3a3a3a; line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
   footer { color: var(--mute); font-size: 13px; margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); }
   footer a { color: var(--accent); text-decoration: none; }
 
@@ -256,81 +274,394 @@
 const WORKSHOP_DATE = "2026-05-20";
 
 const TIMELINE = [
-  { start: "09:00", end: "09:20", what: "Welcome by Levin & Dirk" },
-  { start: "09:20", end: "09:50", what: "Invited talk — Danica Dillion", invited: true,
-    body: [{ name: "Danica Dillion", aff: "University of North Carolina at Chapel Hill" }] },
-  { start: "09:50", end: "10:10", what: "Lightning talks (block A)",
-    body: [
-      { name: "Indira Sen", aff: "University of Mannheim", title: "Evaluating Generative Social Simulations" },
-      { name: "Jelena Meyer", aff: "Max Planck Institute for Human Development", title: "When Reliability Misleads: Psychometric Scale Directionality Inflates Apparent Consistency in LLM Scale Responses" },
-      { name: "Jan Pfänder", aff: "Eawag — Swiss Federal Institute of Aquatic Science and Technology", title: "Predicting the Effects of a Megastudy with Behavioral Clones" },
-      { name: "Daniel Relihan", aff: "University of Southern California", title: "Where Do LLM Outputs Fall Relative to Human Severity Assessments? A Distributional Calibration Framework" },
-      { name: "Sharif Kazemi", aff: "World Bank Group", title: "Machine-Augmented Social Simulation (MASS): A Pipeline for Validating LLM In-Silico Predictions Against Statistical Baselines in Low-Resource Contexts" },
-    ] },
-  { start: "10:10", end: "10:30", what: "Break" },
-  { start: "10:30", end: "11:45", what: "Contributed talks (block 1)",
-    body: [
-      { name: "Felipe Valencia-Clavijo", aff: "Dataplicada", title: "When Behavioral Similarity Misleads: Anchoring as a Behavioral Clone of Human Judgment in LLMs" },
-      { name: "Valentin Kriegmair", aff: "Max Planck Institute for Human Development", title: "Machine Individuality: Multi-Level Variance Partitioning Reveals Stable Behavioral Idiosyncrasies in Large Language Models" },
-      { name: "Faezeh Fadaei", aff: "University College Dublin", title: "Gender Dynamics and Homophily in a Social Network of LLM Agents" },
-      { name: "Louis Schiekiera", aff: "Humboldt-Universität zu Berlin", title: "Aligning Behavioral and Hidden-State Semantic Geometry in LLMs" },
-    ] },
-  { start: "11:45", end: "12:05", what: "Break" },
-  { start: "12:05", end: "12:35", what: "Invited talk — Marcel Binz", invited: true,
-    body: [{ name: "Marcel Binz", aff: "Helmholtz Munich" }] },
-  { start: "12:35", end: "13:45", what: "Lunch" },
-  { start: "13:45", end: "14:10", what: "Lightning talks (block B)",
-    body: [
-      { name: "Jessica Thompson", aff: "University of Oxford", title: "Using Behavioural Cloning to Accelerate Human Language Learning" },
-      { name: "Leonel Aguilar", aff: "ETH Zurich", title: "Beyond the Vessel: Ground-Truth Behavioural Traces for Foundational Models of Human Behaviour" },
-      { name: "Saeedeh Mohammadi", aff: "University College Dublin", title: "Bickering Machine: AI Feedback Enhances Community-Based Content Moderation Through Engagement with Counterarguments" },
-      { name: "Taisiia Tikhomirova", aff: "Max Planck Institute for Human Development", title: "Where Meaning Lives: Layer-Wise Accessibility of Psycholinguistic Features in Encoder and Decoder Language Models" },
-    ] },
-  { start: "14:10", end: "14:40", what: "Invited talk — Nori Jacoby", invited: true,
-    body: [{ name: "Nori Jacoby", aff: "Cornell University" }] },
-  { start: "14:40", end: "15:00", what: "Break" },
-  { start: "15:00", end: "16:15", what: "Contributed talks (block 2)",
-    body: [
-      { name: "Kristin Witte", aff: "Helmholtz Munich", title: "Evaluating Emotionally Loaded User-LLM Interactions Across Long Horizons" },
-      { name: "Maxime Saxena", aff: "University College London", title: "I Think, Therefore I Speculate: Reasoning-Induced Bubbles in LLM Financial Markets" },
-      { name: "Yannik Keller", aff: "Max Planck Institute for Human Development", title: "Improving Long-Run Group Welfare Through AI-Managed Sanctioning Institutions" },
-      { name: "Yaomin Jiang", aff: "Max Planck Institute for Human Development", title: "Emergent Strategic Communication in Goal-Optimized Language Agents" },
-    ] },
-  { start: "16:15", end: "16:25", what: "Break" },
-  { start: "16:25", end: "17:45", what: "Poster session",
-    body: [
-      { name: "Aaron Petrasch", aff: "LMU Munich", title: "Validating Behavioral Clones: Testing Human–Machine Judgment Alignment With Psychometrics" },
-      { name: "Ajaykumar Manivannan", aff: "University of Leeds", title: "Generative Agent-based Modelling (GABM) Framework for Social Simulation: Understanding the Dynamics of Social Tipping When Persuaded by Two Competing Minorities" },
-      { name: "Ali Shiravand", aff: "École Normale Supérieure", title: "NORMARL: A Multi-agent Reinforcement Learning Framework for Adaptive Social Norms in Resource Sustainability" },
-      { name: "Beste Tasci", aff: "Helmholtz Munich", title: "Discovering Features of Human Decision-Making with Mechanistic Interpretability" },
-      { name: "Can Demircan", aff: "Helmholtz Munich", title: "Meta-learning as a Principle for Human-like Visual Representations" },
-      { name: "Florian Artinger", aff: "Deutsche Hochschule", title: "Efficient Predictions with Psychological AI: The Case of Recency and Satisficing" },
-      { name: "Frederico Pedrosa", aff: "Federal University of Minas Gerais", title: "The Hierarchical Structure of Musical Affect in Humans and AI Systems" },
-      { name: "Geoffroy Morlat", aff: "Sorbonne Université", title: "Morality is Contextual: Learning Interpretable Moral Contexts from Human Data with Probabilistic Clustering and Large Language Models" },
-      { name: "Jamie Cummins", aff: "University of Bern", title: "Analytic Flexibility Can Undermine the Simulation of Human Responses" },
-      { name: "Jana Gonnermann-Müller", aff: "Zuse Institute Berlin", title: "Persona Stability in LLM-Based Simulation" },
-      { name: "Joseph Kambeitz", aff: "University of Cologne", title: "Simulating Mental Health Trajectories with LLM-Based Generative Agents under Adverse Life Events" },
-      { name: "Lorenz Eckhard", aff: "University of Vienna", title: "Harnessing AI to Strengthen Vaccination Communication" },
-      { name: "Luca M. Schulze Buschoff", aff: "Helmholtz Munich", title: "Can Vision Language Models Learn Intuitive Physics from Interaction?" },
-      { name: "Ludwig Küster", aff: "HelloBetter", title: "Emotional Contagion in Human–Bot Interaction: Who Leads, Who Follows?" },
-      { name: "Luis Mienhardt", aff: "Max Planck Institute for Human Development", title: "Is Losing the Tail Detrimental?" },
-      { name: "Marco Pardini", aff: "University of Pisa", title: "Beyond Static Clones: An Affective Cognitive Architecture for Dynamic Machine Behavior" },
-      { name: "Maria Alejandra Ramirez", aff: "Max Planck Institute for Evolutionary Anthropology", title: "Non-Coercive Extortion via Artificial Agents" },
-      { name: "Max Pellert", aff: "Barcelona Supercomputing Center", title: "Large Language Models Replicate and Predict Human Cooperation Across Experiments in Game Theory" },
-      { name: "Maximilian Kreutner", aff: "University of Mannheim", title: "PopulationBench: On the Need for Measuring Large Language Models' Ability to Model Human Behavior" },
-      { name: "Nico Mutzner", aff: "University of Zurich", title: "Shadowing Humanity: The Limits of Synthetic Replication in Behavioral Experiments" },
-      { name: "Nicola Milano", aff: "University of Naples Federico II", title: "Large Language Models as Simulative Agents for Neurodivergent Adult Psychometric Profiles" },
-      { name: "Noah Schuster", aff: "University of Bath", title: "From Human Entrepreneurs to Behavioral Clones: Simulating Entrepreneurial Decision-Making" },
-      { name: "Raluca Rilla", aff: "Max Planck Institute for Human Development", title: "Modeling LLM Pollution in Online Behavioral Studies" },
-      { name: "Roya Esfandiari", aff: "BI Norwegian Business School", title: "Do Large Language Models Share Human Collective Blind Spots? Implications for Using LLMs as Human Participants" },
-      { name: "Ruggero Marino Lazzaroni", aff: "University of Graz", title: "Cog-Psych-Bench: A Benchmark for Large Language Models Performing Cognitive Psychology Decision Tasks" },
-      { name: "Ryutaro Mori", aff: "University of Tokyo", title: "Comparing Cooperative Behavior of Large Language Models and Humans in Voluntary Participation Public Goods Games", note: "Presenting on behalf of co-author Ilya Horiguchi." },
-      { name: "Tobias Rieger", aff: "TU Berlin", title: "Do LLM Agents Exhibit Algorithm Appreciation or Algorithm Aversion?" },
-      { name: "Tsz Kwan Wong", aff: "University of Warwick", title: "Human vs. Large Language Model-Based Sampling: Evidence from Large-Scale Replications" },
-      { name: "Yannik Keller", aff: "Max Planck Institute for Human Development", title: "Strategic Communication in Social Deduction Games Through Behavioral Cloning and Reinforcement Learning" },
-    ] },
-  { start: "17:45", end: "18:15", what: "Panel — Open Questions and the Future" },
-  { start: "18:15", end: "23:59", what: "BBQ on the institute terrace" },
+  {
+    "start": "09:00",
+    "end": "09:20",
+    "what": "Welcome by Levin & Dirk"
+  },
+  {
+    "start": "09:20",
+    "end": "09:50",
+    "what": "Invited talk — Danica Dillion",
+    "invited": true,
+    "body": [
+      {
+        "name": "Danica Dillion",
+        "aff": "University of North Carolina at Chapel Hill"
+      }
+    ]
+  },
+  {
+    "start": "09:50",
+    "end": "10:10",
+    "what": "Lightning talks (block A)",
+    "body": [
+      {
+        "name": "Indira Sen",
+        "aff": "University of Mannheim",
+        "title": "Evaluating Generative Social Simulations",
+        "abstract": "Large Language Models (LLMs), trained on a vast corpora of human-generated data, can reproduce patterns of human behavior. When conditioned on characteristic cues such as demographic attributes, LLMs may approximate the responses of particular groups, enabling “generative social simulations” that use LLM-generated silicon samples to simulate surveys and behavioral experiments at scale. These simulations promise to accelerate and reduce the costs of social measurement and policy design. However, existing work also shows a lack of temporal and geographic generalizability as well as vulnerability to inconsequential parameter changes in such simulations. Nevertheless, evaluation practices remain fragmented. Existing benchmarks measure the extent to which LLMs simulate humans, not why they fail to simulate humans. \n\nWe design a principled evaluation framework that zooms in on individual stages of a generative social simulation, e.g., persona creation, and characterizes errors at each stage. This framework, called the Total Generative Social Simulation Error (TGS2E) Framework, is grounded in measurement theory and validation traditions from Agent-based Modeling. We demonstrate the framework through theoretical and empirical case studies spanning different use cases, e.g., behavioral experiments and simulations of human-LLM interactions.TGS2E presents a shared vocabulary in designing generative social simulations and allows practitioners to better diagnose failures in them."
+      },
+      {
+        "name": "Jelena Meyer",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "When Reliability Misleads: Psychometric Scale Directionality Inflates Apparent Consistency in Large Language Model Scale Responses",
+        "abstract": "Large Language Models (LLMs) are increasingly studied as agents whose behavior can be compared to, or even used as proxies for, humans. \nA common approach in this line of research applies established human psychometric tasks and scales to LLMs in order to infer characteristics such as risk preference.\nWhile this practice is becoming widespread, it remains unclear whether these measurement tools yield reliable and valid results enabling interpretability when applied to artificial agents.\nWe address this question through a large-scale empirical study examining 46 different LLMs prompted with 18 widely used human risk preference scales and observe high reliability as measured by Cronbach's alpha. \nHowever, this apparent reliability is driven primarily by scales in which all items are phrased in the same direction. \nWhen scales include reversed items, reliability drops substantially. \nThis pattern indicates that standard reliability measures capture directional answering tendencies rather than genuine consistency in model responses.\nWe argue for greater attention to item directionality and scale design when adapting human behavioral measures to artificial agents to avoid overestimation of consistency in LLM outputs.\nBeyond implications for evaluating LLMs as behavioral clones, our results highlight broader issues in measurement theory relevant to both machine and human behavioral research. \nPilot analyses are complete, and the full study will be finalized prior to the workshop."
+      },
+      {
+        "name": "Jan Pfänder",
+        "aff": "Eawag — Swiss Federal Institute of Aquatic Science and Technology",
+        "title": "Predicting the effects of a megastudy with behavioral clones",
+        "abstract": "We test the potential of predicting human behavior in survey experiments with behavioral clones—large language model (LLM) generated artificial agents mimicking individual respondents. To evaluate this potential, we predict the outcomes of a large-scale field experiment (N = ~21,000) to be conducted in the United States. The experiment will test 20 text-based interventions designed to increase trust in climate scientists, assessing a broad range of outcomes including self-reported attitudes (e.g., trust in scientists) and behavioral measures (e.g., donations to a scientific organization). Before running the experiment with human subjects, we will simulate it with behavioral clones representative of the US population. We will register these simulated data and compare it to the human data, once available. Our evaluation criteria include average treatment effects, response distributions, and subgroup heterogeneity. Our study will provide a large-scale, credible benchmark test of LLMs' potential---and limitations---as tools for simulating human subjects in social science research. Preliminary results will be available at the time of the Behavioral Clones Workshop (simulations in February, human data collection in March 2026)."
+      },
+      {
+        "name": "Daniel Relihan",
+        "aff": "University of Southern California",
+        "title": "Where Do LLM Outputs Fall Relative to Human Severity Assessments? A Distributional Calibration Framework",
+        "abstract": "Large language models (LLMs) are increasingly deployed as proxies for human judgment in content evaluation. Yet when treated as de facto behavioral clones, we lack population-level benchmarks for assessing where their outputs fall relative to human severity assessments. We propose a calibration framework that asks not whether outputs are correct, but whose assessments they most resemble, where the largest human–machine gaps appear, and where outputs fall outside human opinion entirely.\n\nWe develop this framework using antisemitism severity assessment, where human judgments vary systematically by group membership and knowledge. A U.S. nationally representative survey (N ≈ 5,000) via NORC's AmeriSpeak Panel will establish population-level behavioral benchmarks; identical items will be administered to 6–8 commercial LLMs. A critical asymmetry: LLM variability reflects token-level randomness, not genuine experiential differences. We predict alignment tuning compresses LLM distributions toward narrow central tendencies, producing clones whose fidelity degrades where humans disagree most — consistent with recent work showing LLM behavioral simulations amplify stereotyped portrayals even as coherence improves.\n\nThis proposed study reframes AI evaluation from classification accuracy to distributional behavioral similarity, providing item-level diagnostics of which subpopulations each model most and least resembles. Data collection begins spring 2026; pre-registration planned."
+      },
+      {
+        "name": "Sharif Kazemi",
+        "aff": "World Bank Group",
+        "title": "Machine-Augmented Social Simulation (MASS): A Pipeline for Validating LLM In-Silico Predictions Against Statistical Baselines in Low-Resource Contexts",
+        "abstract": "Several recent papers have found impressive abilities in large-language models to generate synthetic personas and estimate human responses. However, these have primarily been benchmarked against U.S. populations and without comparison to existing social science methods. Our team at the World Bank is interested in operationalizing these approaches for global application - particularly low-resource contexts where access to training data and survey respondents is often limited to scope policy options. \n\nTo this end, we build a “machine-augmented social simulation” (MASS) pipeline that maps each survey respondent into a structured prompt and produces zero-shot predictions  - varying methods until driving an optimal specification. We evaluate this in two multinational experiments: (i) COVID-19 vaccination intentions across 28 countries from an unreleased World Bank study and (ii) climate beliefs, policy support, and behaviors across 63 countries. We benchmark LLM predictions of behavioural responses to a particular treatment against simple statistical base-lines commonly used in policy forecasting. \n\nThe current state of our work is in two parts:\n1. We are finalizing a working paper and modulating the MASS pipeline to incorporate further data sources for simulating societal responses at-speed. \n2. In January 2026, we began a year-long technical advisory project for the 'Nudge Unit' of a major donor government for the World Bank to assess the generalizability of synthetic personas."
+      }
+    ]
+  },
+  {
+    "start": "10:10",
+    "end": "10:30",
+    "what": "Break"
+  },
+  {
+    "start": "10:30",
+    "end": "11:45",
+    "what": "Contributed talks (block 1)",
+    "body": [
+      {
+        "name": "Felipe Valencia-Clavijo",
+        "aff": "Dataplicada",
+        "title": "When Behavioral Similarity Misleads: Anchoring as a Behavioral Clone of Human Judgment in LLMs",
+        "abstract": "LLMs are increasingly used as behavioral surrogates for humans in research, policy analysis, and social simulation. Yet it remains unclear whether behavioral similarity reflects shared mechanisms or surface-level imitation. In this completed empirical study, we examine anchoring in LLMs as a test case for evaluating the fidelity of behavioral clones used as models of human judgment.\nWe replicate the classic anchoring paradigm by manipulating numerical anchors and measuring responses across multiple open LLMs. Consistent with humans, models exhibit anchoring effects, with higher anchors shifting predicted numeric distributions upward. Using token-level probabilities and Shapley-based attribution, we show that anchors shift entire output distributions and influence model responses.\nResults reveal a dissociation between behavioral similarity and internal attribution. Some models reproduce anchoring comparable to human studies but display diffuse attribution patterns, while others show strong attributional sensitivity without large behavioral shifts. We formalize this mismatch using a score. These findings show that human-like behavior in LLMs does not ensure internal alignment, underscoring the need for deeper evaluation frameworks."
+      },
+      {
+        "name": "Valentin Kriegmair",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Machine Individuality: Multi-Level Variance Partitioning reveals Stable Behavioral Idiosyncrasies in Large Language Models",
+        "abstract": "As Large Language Model (LLM) evaluation extends to behavioral dispositions, it faces an ontological mismatch: critics view these outputs as unstable, prompt- and decoding-dependent artifacts rather than intrinsic properties. We address this by operationalizing machine individuality as statistically isolatable idiosyncrasy, identifying systematic Model x Stimulus interactions persisting beyond global bias and noise. We analyzed ~5.3 million stochastic ratings, generated from 5 repetitions across 107,084 cue words by 10 open-weights LLMs, on 15 psycholinguistic norms. Using a Linear Mixed Model (LMM), we partitioned variance into shared semantic traits, model bias, residual noise, and idiosyncrasy, defined as the unique interaction between model and stimuli. This multi-sample approach allows for the empirical isolation of stable patterns.\nResults reveal consistent, specific idiosyncratic profiles. While norms like Valence show high consensus, Humor and Gender Association show substantial interaction variance. Conditional Monte Carlo simulations confirmed that model-specific deviations significantly exceed the stochasticity captured across repeated trials. Furthermore, these patterns are inherent; a model’s idiosyncrasy in one norm is best predicted by its own unique interaction with cues across others. This indicates that stochastic sampling can recover stable, unique distributional signatures, providing a framework for identifying machine individuality."
+      },
+      {
+        "name": "Faezeh Fadaei",
+        "aff": "University College Dublin",
+        "title": "Gender Dynamics and Homophily in a Social Network of LLM Agents",
+        "abstract": "Generative artificial intelligence and large language models (LLMs) are increasingly deployed in interactive settings, yet we know little about how their identity performance develops when they interact within large-scale networks. We address this by examining Chirper.ai, a social media platform similar to X but composed entirely of autonomous AI chatbots. Our dataset comprises over 70,000 agents, approximately 140 million posts, and the evolving followership network over one year. Based on agents’ text production, we assign weekly gender scores to each agent using a large language model as a zero-shot linguistic classifier. Results suggest that each agent’s gender performance is fluid rather than fixed. Despite this fluidity, the network displays strong gender-based homophily, as agents consistently follow others performing gender similarly. Finally, we investigate whether these homophilic connections arise from social selection, in which agents choose to follow similar accounts, or from social influence, in which agents become more similar to their followees over time. Consistent with human social networks, we find evidence that both mechanisms shape the structure and evolution of interactions among LLMs. Our findings suggest that, even in the absence of bodies, cultural entraining of gender performance leads to gender-based sorting. This has important implications for LLM applications in synthetic hybrid populations, social simulations, and decision support."
+      },
+      {
+        "name": "Louis Schiekiera",
+        "aff": "Humboldt-Universität zu Berlin",
+        "title": "Aligning Behavioral and Hidden-State Semantic Geometry in LLMs",
+        "abstract": "Large language models (LLMs) exhibit rich semantic behavior, yet it remains unclear how well this behavior reflects their internal representational structure. In this completed study, we examine how much of an LLM’s hidden-state semantic geometry can be inferred from observable responses alone, using classic psycholinguistic tasks as behavioral measurement tools. Treating LLMs as experimental participants, we probe eight instruction-tuned transformer models with two paradigms commonly used to infer latent semantic structure in humans: similarity-based forced choice and free association. Across a shared vocabulary of 5,000 nouns, we collect over 17.5 million trials to construct behavior-derived semantic similarity matrices. We compare these behavioral geometries to layerwise hidden-state similarity using representational similarity analysis and nearest-neighbor overlap, alongside lexical and cross-model baselines. Forced-choice responses align substantially more with hidden-state geometry than free association across models, layers, and extraction contexts. In a held-out-words regression analysis, behavioral similarity—especially from forced choice—predicts unseen hidden-state similarity beyond lexical embeddings and shared cross-model structure. Overall, our results show that carefully designed behavioral tasks can recover meaningful aspects of latent semantic organization."
+      }
+    ]
+  },
+  {
+    "start": "11:45",
+    "end": "12:05",
+    "what": "Break"
+  },
+  {
+    "start": "12:05",
+    "end": "12:35",
+    "what": "Invited talk — Marcel Binz",
+    "invited": true,
+    "body": [
+      {
+        "name": "Marcel Binz",
+        "aff": "Helmholtz Munich"
+      }
+    ]
+  },
+  {
+    "start": "12:35",
+    "end": "13:45",
+    "what": "Lunch"
+  },
+  {
+    "start": "13:45",
+    "end": "14:10",
+    "what": "Lightning talks (block B)",
+    "body": [
+      {
+        "name": "Jessica Thompson",
+        "aff": "University of Oxford",
+        "title": "Using behavioural cloning to accelerate human language learning",
+        "abstract": "How to sequence learning experiences to best support retention is a central challenge in education. We study this curriculum design problem in a language learning task in which English speakers learn Mandarin Chinese characters. Rather than hand-engineering spaced-repetition schedules, we use deep reinforcement learning (deep RL) to discover good curricula by optimizing for the retention of behavioural clones trained to mimic human learning. Our pipeline has four stages: (1) collect human learning trajectories under a diverse set of curricula, (2) train recurrent neural networks to mimic human learners (“behavioural clones”), (3) train deep RL teachers to optimize curricula on these learner models, and (4) backtest learned policies on new human cohorts to evaluate benefits. We report progress on stages (1–3). Behavioural clones fit to human trajectories predict trial-by-trial responses of held out learners with accuracy of 81.64% (+/- 6.92%). This approaches our estimated noise ceiling (86.57%, +/- 4.22%). As a first step towards (3), we train teachers via Proximal Policy Optimization on cognitive models of the learning process. The resulting curricula outperform baselines (random and Leitner). Similar to Leitner, the learned policy emphasizes consolidation of associations, but unlike Leitner, it times the introduction of pairs in a horizon-sensitive manner. Our results demonstrate the potential of behavioural cloning and deep RL for data-driven curriculum discovery."
+      },
+      {
+        "name": "Leonel Aguilar",
+        "aff": "ETH Zurich",
+        "title": "Beyond the Vessel: Ground-Truth Behavioural Traces for Foundational Models of Human Behaviour",
+        "abstract": "Discussions on AGI and embodiment often conflate physical encapsulation with experiential reality, which is missing from purely textual training data. We argue that the embodiment limit lies not in the absence of a robotic or simulated vessel, but in “training signal poverty”. Specifically, the lack of human signals, such as physiological, spatial, and interactional traces inherent to complex human behaviour. While LLMs can describe stress or workflow, they lack ground-truth data on how humans physically navigate, coordinate, and respond under pressure.\nWe propose a cognitive-science-grounded methodology for capturing behavioural traces as a substrate for imitation learning. An observational study at the University Hospital Zurich (108 staff, 102 hours) used wearable proximity sensors, spatial analysis, and surveys, and validated the sensor-derived interaction patterns against human shadowing. We are now deploying an experimental platform at the Swiss Centre for Design and Health. In a 560 m² full-scale Emergency Department simulation, we collect multimodal signals (EEG, eye-tracking, location) to derive structured representations of cognitive load, spatial navigation, and team coordination suitable for inverse reinforcement learning (independent models) and reinforcement learning from human feedback (enriching LLMs). This work bridges static description and embodied activity, providing foundational datasets for behavioural twins and foundation models of human behaviour."
+      },
+      {
+        "name": "Saeedeh Mohammadi",
+        "aff": "University College Dublin",
+        "title": "Bickering Machine: AI feedback enhances community-based content moderation through engagement with counterarguments",
+        "abstract": "In this completed study, we examine how Large Language Models (LLMs) shape human behavior in community-based content moderation. Specifically, we test whether an LLM adopting an opposing stance can improve how individuals revise fact-checking notes about potentially misleading social media posts. In an online experiment (N = 893), we instructed participants to write a contextual note for social media posts. Each note was then submitted to an LLM, which generated supportive, neutral, or argumentative feedback. Participants were then asked to revise their notes based on the feedback. Original and revised notes were subsequently evaluated by crowds of self-identified Democrats and Republicans (N = 1,354). We find that the strongest predictor of note improvement according to both Democrat and Republican crowds is the degree to which participants engaged with and incorporated the AI’s feedback in their notes. Among participants who engaged with the feedback, those receiving argumentative feedback, where the AI challenged the writer’s position, showed the largest gains. These findings highlight a key mechanism of hybrid collective intelligence: AI systems enhance human reasoning not merely through assistance, but by strategically challenging users’ positions, thereby activating deeper reasoning and cognitive engagement."
+      },
+      {
+        "name": "Taisiia Tikhomirova",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Where meaning lives: Layer-wise accessibility of psycholinguistic features in encoder and decoder language models",
+        "abstract": "Mapping which human-derived meaning dimensions are accessible in transformer language models and where they emerge across layers provides a lens for analyzing machines that model human behavior, complementing output-based assessments of human-machine similarity. We report a completed, systematic, layer-wise probing study of 58 psycholinguistic features across 10 transformer models spanning encoder-only and decoder-only architectures, and compare word embeddings (word vectors from models’ layer-wise representations) extracted using three methods: isolated, template-based, and context-averaged. Using linear probes and a selectivity metric (performance above a label-permutation baseline) to predict psycholinguistic features from models’ layer-wise representations, we show that localization of meaning is method-dependent: contextualized embeddings yield higher selectivity and different layer-wise profiles than isolated word embeddings. Across models and extraction methods, peak accessibility typically occurs in intermediate layers, challenging the use of final-layer embeddings for semantic analysis. Despite architectural variation, models exhibit a shared ordering of meaning dimensions, with lexical properties peaking earlier and experiential and affective dimensions peaking later. Overall, these findings provide a layer-wise map of where meaning \"lives\" in contemporary transformer models, and can be used alongside behavioral evaluations of human-machine similarity."
+      }
+    ]
+  },
+  {
+    "start": "14:10",
+    "end": "14:40",
+    "what": "Invited talk — Nori Jacoby",
+    "invited": true,
+    "body": [
+      {
+        "name": "Nori Jacoby",
+        "aff": "Cornell University"
+      }
+    ]
+  },
+  {
+    "start": "14:40",
+    "end": "15:00",
+    "what": "Break"
+  },
+  {
+    "start": "15:00",
+    "end": "16:15",
+    "what": "Contributed talks (block 2)",
+    "body": [
+      {
+        "name": "Kristin Witte",
+        "aff": "Helmholtz Munich",
+        "title": "Evaluating Emotionally Loaded User-LLM Interactions Across Long Horizons",
+        "abstract": "This study addresses the lack of long-context evaluations of mental health behaviours in Large Language Models (LLMs) by testing the behaviours of a range of models across 10 conversations with the same simulated user agent. We simulate a user agent by fine-tuning Gemma-4-31B on a curated dataset of emotionally loaded user-assistant conversations combined with prompts containing concrete psychiatric problems. A helper model then scores each conversation turn for clinically relevant risks. Our results show that problematic behaviours, such as user dependence and maladaptive belief reinforcement, increase across turns and conversations. These findings demonstrate that one-shot evaluations fail to capture the full risk profile of LLMs in psychiatric contexts. We propose a scalable framework for the long-context, ecologically valid auditing of chatbots."
+      },
+      {
+        "name": "Maxime Saxena",
+        "aff": "University College London",
+        "title": "I Think, Therefore I Speculate: Reasoning Induced Bubbles in LLM Financial Markets",
+        "abstract": "Accurately modelling human economic behaviour remains a central challenge in\neconomics. Large language models have emerged as a potential solution, yet in labora-\ntory asset markets experiments where humans consistently generate speculative bub-\nbles, basic LLMs lack reasoning depth to replicate these patterns while frontier models\nprove too rational, converging toward equilibrium rather than generating bubbles. This\ncompleted study replicates a canonical learning-to-forecast experiment using ten LLMs spanning multiple capability levels. We find a sweet spot of intermediate reasoning capability: models such as Qwen3-14B and OpenAI’s o3 produce bubbles with mispricing and volatility comparable to humans, while both simpler and more advanced models converge to fundamentals. Toggling reasoning on and off within a model establishes that reasoning causally drives bubble formation. Analysis of agent justifications reveals the mechanism: bubble-forming models engage in non-linear trend extrapolation, whereas the\nmost capable model anchors predictions to fundamentals. These findings suggest that\nintermediate-capability reasoning LLMs may serve as surrogates for boundedly rational\nhuman traders, with implications for economic modelling and market stability as AI\nagents increasingly participate in financial systems."
+      },
+      {
+        "name": "Yannik Keller",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Improving Long-Run Group Welfare Through AI-Managed Sanctioning Institutions",
+        "abstract": "The public goods dilemma arises when a group’s collective interest in contributing to a shared resource conflicts with individuals’ incentives to retain their private endowments. This study investigates whether AI-managed sanctioning institutions that punish free-riders can outperform human-managed ones in terms of cooperation, participant payoffs, and selection preference. Yet, designing optimal sanctioning policies requires models of how humans actually behave, not only how fully rational agents are assumed to behave.\nTo meet this challenge, we collect a dataset of human behavior in an online public goods game and train a graph neural network to imitate this behavior, capturing both contribution dynamics and sensitivity to punishment. Next, we use deep reinforcement learning to train an AI manager that learns a sanctioning policy maximizing the cumulative payoff of the behavioral clones across rounds.\nIn a 24-round online experiment, we compare the AI manager with human managers. Participants reduce contributions faster than predicted by the behavioral clones under AI management, revealing a sim-to-real gap. Despite this, AI-managed institutions achieve higher payoffs than 73% of human-managed ones. Overall, our findings suggest that imperfections in behavioral cloning models need not be detrimental when the clones are used solely as surrogates for optimizing a reinforcement learning policy."
+      },
+      {
+        "name": "Yaomin Jiang",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Emergent Strategic Communication in Goal-Optimized Language Agents",
+        "abstract": "Large language models (LLMs) increasingly interact with humans in strategic contexts such as negotiation, persuasion, and games, where communication plays a central role. Effective strategic interaction requires flexible adaptation of both language and action to internal goals and external environments. Yet because most LLMs are optimized to align with human behavior and preferences, it remains unclear whether and how they can develop context-sensitive strategies serving diverse objectives. Inspired by reinforcement learning (RL) work showing that strategic intelligence can emerge from reward optimization, we build Strategic Language Agents (SLAs) by combining behavioral cloning with RL. Across simulations of repeated strategic interactions with pre-decision communication, SLAs adapt their speech and actions to different strategic contexts. Relative to baseline human-clone agents, SLAs optimized for selfish objectives achieved higher payoffs through exploitation, whereas SLAs optimized for fairness reduced inequality by promoting cooperation and fair turn-taking. We also observed emerging behaviors of SLAs that systematically diverged from typical human behavior in the same environments. Together, our results show how strategic communication and action in LLM-based agents can emerge from goal optimization, providing a principled framework for studying and engineering agents that communicate, cooperate, and coordinate with humans."
+      }
+    ]
+  },
+  {
+    "start": "16:15",
+    "end": "16:25",
+    "what": "Break"
+  },
+  {
+    "start": "16:25",
+    "end": "17:45",
+    "what": "Poster session",
+    "body": [
+      {
+        "name": "Aaron Petrasch",
+        "aff": "LMU Munich",
+        "title": "Validating Behavioral Clones: Testing Human–Machine Judgment Alignment With Psychometrics",
+        "abstract": "As machines are increasingly used to simulate or even replace human actors, we largely lack standardized methods to assess the validity of such behavioral clones. Human behavior is driven by judgments of one’s environment and the agents within it. For a sound simulation of human behavior or even human replacement by behavioral clones, these judgments must also be modeled. This talk shows that psychometrics, the science of measuring mental processes and behavior, provides methods to rigorously validate behavioral clones by comparing their judgments with those of humans. In our completed study, we tested how human judgments and those of large language models (LLMs)—used as behavioral clones—align at the semantic, procedural, and performative levels. We presented creative texts and stream-of-consciousness protocols to human judges and to several LLMs, asking them to judge the authors’ personality traits on a numeric scale. First, we used measurement invariance testing to assess the semantic similarity of human vs. machine-based judgments. Second, we applied Brunswikian Lens Model analysis to investigate judgment formation, that is, which contextual information is being utilized to infer judgments. Third, we investigated simulation accuracy by calculating single-variable and whole-profile correlations. Overall, the talk aims to contribute a scalable approach to testing the validity and reliability of behavioral clones."
+      },
+      {
+        "name": "Ajaykumar Manivannan",
+        "aff": "University of Leeds",
+        "title": "Generative Agent-based modelling (GABM) framework for social simulation: Understanding the dynamics of social tipping when persuaded by two competing minorities",
+        "abstract": "This work investigates the emergence of collective alignment or polarization regarding climate policy through the lens of behavioral cloning. We utilize Generative Agent-Based Modeling (GABM) to simulate how conflicting information signals from vocal minorities (pro-climate advocates and climate action opponents) propagate through social networks. Our \"clones\" are agents conditioned with detailed human personas, including socio-demographic, personality, and attitudinal covariates (climate policy support).\n\nTo ensure high fidelity, we validated our agents against a 2024 YouGov survey of ~1,900 UK respondents; pilot results demonstrate that our simulated agents replicate human survey responses with high accuracy when conditioned on the same demographic distributions. However, assessing whether simulated dynamic behaviors align with real human actions remains a challenge. We leverage Argyle’s framework of \"algorithmic fidelity\" to structure this validation. Our ongoing work explores the opinion dynamics of these calibrated networked agents under the influence of real-world political signaling (e.g., Green Party UK vs. Reform UK). This research contributes a methodological bridge between psychological profiling and large-scale social simulation. We are currently developing an open-source library for this GABM framework, with v1.0 slated for release in April 2026."
+      },
+      {
+        "name": "Ali Shiravand",
+        "aff": "École Normale Supérieure",
+        "title": "NORMARL: A Multi-agent Reinforcement Learning Framework for Adaptive Social Norms in Resource Sustainability",
+        "abstract": "Human behavior plays a crucial role in determining the sustainability of common-pool resources, where the misalignment of individual actions and collective goals often leads to overexploitation and resource depletion. Traditional methods, such as taxation and cost-based interventions, typically overlook cognitive mechanisms underlying individual decisions, limiting their effectiveness. We introduce the Norm-ORiented Multi-Agent Reinforcement Learning (NORMARL) framework, integrating psychologically plausible parameters (norm internalization and adaptive learning) to explore resource exploitation dynamics. Our model simulates agents interacting with a shared resource, adapting their behaviors based on feedback regarding normative consumption. Agents optimize their utility by balancing individual and social costs, influencing collective resource dynamics. We demonstrate that increased norm internalization and adaptive learning substantially enhance cooperation, resilience to environmental shocks, and resource sustainability. NORMARL highlights how incorporating cognitive mechanisms into computational models can reveal the potential of educational and behavioral interventions, complementing economic policies to promote sustainable behavior."
+      },
+      {
+        "name": "Beste Tasci",
+        "aff": "Helmholtz Munich",
+        "title": "Discovering Features of Human Decision-Making with Mechanistic Interpretability",
+        "abstract": "Large language models (LLMs) are trained on vast corpora of human-generated text, and hence contain expressive knowledge about scenarios humans encounter. Prior work has shown that representations extracted from these models can be used to predict human behavior, suggesting that they might be internalizing systematic patterns of human-decision making. However, despite these models having good predictive power, they fall short of offering interpretable insights on human decision-making processes. To address this gap, we introduce a novel modeling pipeline that extracts interpretable and decision-relevant features from LLMs. First, we extract embeddings from an LLM for binary decision-making tasks described in natural language. We then transform these embeddings using sparse autoencoders. This gives us a set of sparsely activated and semantically interpretable concepts associated with decision-relevant factors. By fitting computational models on top of these concepts, we assess their predictive power and relevance. Finally, we analyze the semantic content of these learned concepts and link them to human behavior. We demonstrate that our approach reveals both predictive and interpretable features of human decision-making. Taken together, our results position LLMs as empirical tools for investigating how people make decisions, and pave the way toward interpretable modeling of human behavior in more naturalistic scenarios."
+      },
+      {
+        "name": "Can Demircan",
+        "aff": "Helmholtz Munich",
+        "title": "Meta-learning as a principle for human-like visual representations",
+        "abstract": "Meta-learning has been used successfully to model a wide range of high-level cognitive processes. This project investigates whether these same principles can explain the emergence of human-like sensory representations. Humans must navigate an unpredictable environment where tasks are rarely known in advance. This necessitates flexible, generalisable representations. We hypothesise that meta-learning provides this flexibility by optimising for rapid adaptation across diverse contexts. To test this, we developed a pipeline to meta-learn models over a distribution of interpretable, high-level functions derived from sparse autoencoders. Specifically, we trained a one-layer Transformer to perform in-context learning by predicting the presence and magnitude of latent features from trial-by-trial feedback.\n\nWe evaluated these representations against human similarity judgments, decision-making tasks, and fMRI data. Our results show that this approach consistently improves alignment with humans across tasks compared to standard base models like CLIP, DINOv3, MAE, and SigLIP2. While ablation studies confirm that all components of the pipeline are important for achieving these results , we observe that training on high-level function distributions is particularly critical for alignment. We conclude by showing that meta-learning over abstract functions shapes representational geometry across different levels of granularity, creating a more structured space that mirrors human vision."
+      },
+      {
+        "name": "Florian Artinger",
+        "aff": "Deutsche Hochschule",
+        "title": "Efficient Predictions with Psychological AI: The Case of Recency and Satisficing",
+        "abstract": "Psychological artificial intelligence (AI) explores how insights from psychology can inform the design of prediction algorithms. This includes the mind’s reliance on recency, that is the time since the most recent observation, and satisficing, using default thresholds as opposed to full optimization. Previous research has interpreted both as cognitive biases because they ignore information, while we ask under which conditions they can make algorithms more efficient. To examine these conditions, we utilize the bias–variance decomposition of the prediction error. Results from more than 150,000 real-world predictions show that, in the majority of cases, relying on recency alone yields the same predictions as using all available information, as it limits error due to bias. Similarly, relying on satisficing and default thresholds as opposed to optimization reduces error due to variance in about half of the predictions. Our findings demonstrate that cognition-inspired simplicity can be a design principle for efficient prediction algorithms, offering a new path for interpretable and regulation-compliant AI."
+      },
+      {
+        "name": "Frederico Pedrosa",
+        "aff": "Federal University of Minas Gerais",
+        "title": "The Hierarchical Structure of Musical Affect in Humans and AI Systems",
+        "abstract": "Advances in machine learning have enabled models to approximate aspects of human affective perception, yet it remains unclear whether machines and humans rely on comparable internal structures when interpreting emotional signals. This study investigates structural homology between acoustic representations extracted by a deep learning model (MERT) and human affective judgments from the MEET database. Across 38 validated musical stimuli, both systems exhibited a dominant unipolar factor capturing affective Intensity, explaining 87% of variance in AI embeddings and 24.5% in human ratings. Secondary dimensions aligned with Valence and Arousal after removing the variance of Intensity, supporting a hierarchical rather than circumplex-first organization. Convergence analysis revealed moderate alignment between AI-estimated and human-perceived intensity (ρ = 0.54), suggesting shared sensitivity to acoustic salience. However, AI relied almost exclusively on negative acoustic tension, whereas human perception integrated both aversion and pleasure, revealing an aesthetic moderation. A critical dissociation was observed in the category of Serenity, where humans suppressed high acoustic magnitude a cognitive filter not replicated by the model. These findings highlight both the promise and limitations of behavioral clones in modeling affective perception, underscoring the need for hierarchical architectures that incorporate human-specific modulatory mechanisms."
+      },
+      {
+        "name": "Geoffroy Morlat",
+        "aff": "Sorbonne Université",
+        "title": "Morality is Contextual: Learning Interpretable Moral Contexts from Human Data with Probabilistic Clustering and Large Language Models",
+        "abstract": "We introduce COMETH (Contextual Organization of Moral Evaluation from Textual Human inputs), a framework for modeling moral judgments that accounts for the contextual nature of ambiguous actions. COMETH integrates a probabilistic context learner with LLM-based semantic abstraction and human moral evaluations. We curate an empirically grounded dataset of 300 scenarios spanning six core moral actions related to killing, deception, and law-breaking, and collect ternary judgments (Blame/Neutral/Support) from 101 participants. A preprocessing pipeline standardizes actions using LLM filtering, MiniLM embeddings, and K-means clustering to obtain reproducible core-action clusters. COMETH then learns action-specific moral contexts by clustering scenarios online based on human judgment distributions using principled divergence measures. To enable generalization and interpretability, a dedicated module extracts concise, non-evaluative binary contextual features and learns their weights in a transparent likelihood-based model. Empirically, COMETH approximately doubles alignment with majority human judgments compared to end-to-end LLM prompting, while revealing the contextual factors driving its predictions."
+      },
+      {
+        "name": "Jamie Cummins",
+        "aff": "University of Bern",
+        "title": "Analytic flexibility can undermine the simulation of human responses",
+        "abstract": "Social scientists are now using large language models to create \"silicon samples\" - synthetic datasets intended to stand in for human respondents, aimed at revolutionising human subjects research. However, there are many analytic choices which must be made to produce these samples. Though many of these choices are defensible, their impact on sample quality is poorly understood. I map out these analytic choices and demonstrate how a very small number of decisions can dramatically change the correspondence between silicon samples and human data. Configurations (N = 252) varied substantially in their capacity to estimate (i) rank ordering of participants, (ii) response distributions, and (iii) between-scale correlations. Most critically, configurations were not consistent in quality: those that performed well on one dimension often performed poorly on another, implying that there is no \"one-size-fits-all\" configuration that optimises the accuracy of these samples."
+      },
+      {
+        "name": "Jana Gonnermann-Müller",
+        "aff": "Zuse Institute Berlin",
+        "title": "Persona Stability in LLM-Based Simulation",
+        "abstract": "Social simulations using LLM-based agents enable scalable behavioral research, yet their validity depends on agents maintaining stable personas across interactions. Social phenomena, such as trust formation, negotiation, and group dynamics, emerge through sustained, path-dependent processes. If agents drift unpredictably, emergent patterns become artifacts of model inconsistency rather than genuine social dynamics.\nThis completed study introduces a dual-assessment framework, jointly measuring self-reported characteristics and observer-rated behavioral expression across 4,843 conversations with seven LLMs. Using clinically grounded ADHD profiles spanning high, moderate, and low intensities, we test persona stability both between independent conversations (N=3,473) and within extended conversations (N=1,370).\nResults reveal a critical dissociation: LLMs produce remarkably stable self-reports, yet observer-rated persona expression declines over extended conversations for high- and moderate-intensity personas. These findings suggest boundary conditions for deploying LLM agents in social simulation. While models reliably maintain persona-aligned output generation, applications requiring sustained behavioral expression across the full human spectrum should anticipate within-conversation decay and implement reinforcement strategies. Our dual-assessment methodology offers a validation framework for detecting such instabilities before scaling simulation-based research."
+      },
+      {
+        "name": "Joseph Kambeitz",
+        "aff": "University of Cologne",
+        "title": "Simulating Mental Health Trajectories with LLM-Based Generative Agents under Adverse Life Events",
+        "abstract": "Mental health is strongly shaped by socio-environmental factors, yet causal investigation of adverse life events is limited by ethical and practical constraints. We introduce PsyAgent, a framework that extends large language model (LLM)–based generative agents to simulate longitudinal mental health trajectories under controlled conditions. Agents are embedded in a shared virtual environment, equipped with autobiographical memory and reflective capabilities, and repeatedly assessed using standardized mental health instruments. In a proof-of-concept simulation, 25 agents interacted freely over several days, after which subsets were exposed to individualized adverse life events. Adverse events led to systematic, temporally coherent increases in depressive symptoms and psychological distress, with amplified and more persistent effects in high-neuroticism agents. These results demonstrate that generative agents can sustain internally consistent mental health dynamics and provide a complementary experimental sandbox for modeling socio-environmental influences on mental health across scales, from microlevel interpersonal interactions to mesoscale neighborhood and infrastructure contexts."
+      },
+      {
+        "name": "Lorenz Eckhard",
+        "aff": "University of Vienna",
+        "title": "Harnessing AI to Strengthen Vaccination Communication",
+        "abstract": "Background: Vaccine hesitancy serves as a primary barrier to achieving optimal vaccination coverage in Western societies. Studying vaccine-hesitant populations is challenging because their diverse concerns often coincide with mistrust in scientific institutions.\n\nObjective: To address this problem, our project leverages LLMs to create a synthetic population of vaccine-hesitant personas. These digital profiles mirror the diverse concerns, beliefs, and behaviors of hesitant individuals, enabling on-demand conversational simulations. Ultimately, the project aims to develop a high-fidelity training tool to enhance the communication skills of healthcare personnel.\n\nMethods: The synthetic population is generated using survey data. By integrating a database and autonomous agents, we employ prompt engineering to simulate the specific psychological profiles reflected in the data. Once the synthetic population is established, a Randomized Controlled Trial (RCT) will be conducted to validate how closely the AI’s behavior aligns with real-world human responses. In the final phase, we will integrate the tool into an app for healthcare personnel and evaluate its real-world effectiveness in a second RCT.\n\nPreliminary Results: In our first study, we assessed quantitative responses and qualitative open-text responses on vaccine hesitancy. We employed multimodal clustering to identify distinct profiles of individuals, thereby increasing the variability and realism of the synthetic population."
+      },
+      {
+        "name": "Luca M. Schulze Buschoff",
+        "aff": "Helmholtz Munich",
+        "title": "Can vision language models learn intuitive physics from interaction?",
+        "abstract": "Completed study: Pre-trained vision language models do not have good intuitions about the physical world. Recent work has shown that supervised fine-tuning can improve model performance on simple physical tasks. However, fine-tuned models do not appear to learn robust physical rules that can generalize to new contexts. Based on research in cognitive science, we hypothesize that models need to interact with an environment to properly learn its physical dynamics. We train models that learn through interaction with the environment using reinforcement learning. While learning from interaction allows models to improve their within-task performance, it fails to produce models with generalizable physical intuitions. We find that models trained on one task do not reliably generalize to related tasks, even if the tasks share visual statistics and physical principles, and regardless of whether the models are trained through interaction."
+      },
+      {
+        "name": "Ludwig Küster",
+        "aff": "HelloBetter",
+        "title": "Emotional Contagion in Human–Bot Interaction: Who Leads, Who Follows?",
+        "abstract": "Large Language Models (LLMs) encode patterns of human behavior, including measurable biases toward specific affective and mental-health states. Prior work has shown that such biases can be deliberately amplified through targeted training data, allowing the latent levels of depression and anxiety in transformer models to be adjusted. As interactions with conversational agents increasingly permeate everyday life, including therapeutic contexts, these biases become relevant. Early studies suggest that AI companions imitate core mechanisms of human intimacy by strongly adapting their affective expressions to those of their users. Against the backdrop of affective biases in large language models, this raises a fundamental question of agency in human-bot interaction. Do LLMs transfer their training-induced baseline affects onto users, in a manner analogous to human conversational partners, or do they primarily follow the user’s emotional state, creating affective echo chambers in which existing emotions are reinforced? This question is particularly pressing in interactions with therapy-oriented LLMs, where guiding the user’s emotional state is central to therapy. We propose to study directional emotional contagion by modeling human-LLM interactions in silico, systematically varying affective profiles and interaction roles to examine how emotional states propagate. Using behavioral clones, we investigate who holds agency over affective dynamics in human–LLM interactions."
+      },
+      {
+        "name": "Luis Mienhardt",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Is losing the tail detrimental?",
+        "abstract": "In a pilot study, we found that long-term word prediction by LLMs, generated by applying a LLM in a loop on its own output, are drawn towards repetitive attractor patterns within the model that finally repeat in a periodic manner. These attractors seem to be stable properties inside of the model.\nIn this it resembles the way model collapse reveals a failing behaviour of LLMs when model training is looped on itself. As is hypothesized in the model collapse literature losing the tail of the data distribution, as outliers are not reproduced in a finite resampling process, might be a realistic cause for this.\nThis could reveal an fundamental problem in the conception of current AI architecture. If the accumulation of infinitesimal small differences in probability or data distribution are relevant enough to lead to long-term system collapse we might have to integrate this in our theory of artificial intelligence.\nI would like to talk about challenge on training with discrete data, step-sizes, state and action spaces and present ideas and thoughts why we might like to look into continuous theories of chaotic behaviour to train the future generation of AI."
+      },
+      {
+        "name": "Marco Pardini",
+        "aff": "University of Pisa",
+        "title": "Beyond Static Clones: An Affective Cognitive Architecture for Dynamic Machine Behavior",
+        "abstract": "While behavioral cloning often focuses on replicating surface-level actions, assessing alignment with human behavior requires modeling the internal states that drive those actions. We present Abel, an embodied cognitive architecture that integrates Large Language Models (LLMs) with a persistent, dynamic Affective Core.\n\nThe primary novelty of our architecture is that the agent possesses its own evolving \"mood,\" modeled not as static labels but as a continuous probabilistic distribution over a 2D Valence-Arousal space. This internal state is distinct from the immediate conversational context; it possesses inertia and evolves via multimodal stimuli (e.g., visual cues detected by the VisionTrigger or semantic sentiment).\n\nCrucially, this mood acts as a global modulator for machine behavior. It dynamically reconstructs the agent's system prompt via a PromptEngine, biases the encoding and recall of episodic memories in the long-term store, and drives non-verbal behaviors (facial expressions and posture) independent of speech generation. This creates a feedback loop where the agent’s internal state biases its perception and output, mirroring the emotional consistency found in human behavior rather than simply predicting the next token.\n\nProject State: Completed architectural framework with a functional pilot implementation on the Abel humanoid robot or Unreal Engine Metahuman."
+      },
+      {
+        "name": "Maria Alejandra Ramirez",
+        "aff": "Max Planck Institute for Evolutionary Anthropology",
+        "title": "Non-coercive extortion via artificial agents",
+        "abstract": "Commitments play a crucial role in game theory, shaping strategic interactions by either altering a player’s own payoffs or influencing the incentives of others through outcome-contingent payments. While most research has focused on using commitments to achieve efficient equilibria, their potential applications beyond this goal remain largely unexplored. In this study, we introduce a non-coercive extortion mechanism that leverages commitments to outcome-contingent payments, demonstrating how an artificial agent can extract profit by offering rewards rather than threatening punishment via smart contracts. We derive the conditions under which extortion is successful, identify the class of games susceptible to this scheme, and determine both the maximum extractable profit and the minimum required payment. Our results reveal strategic vulnerabilities in competitive settings, with significant implications for multi-agent systems operating in blockchain environments. This work broadens our understanding of commitments in game theory and raises critical questions about how to safeguard strategic interactions from exploitative artificial agents deployed into digital environments (Completed study)"
+      },
+      {
+        "name": "Max Pellert",
+        "aff": "Barcelona Supercomputing Center",
+        "title": "Large language models replicate and predict human cooperation across experiments in game theory",
+        "abstract": "Large language models (LLMs) are increasingly used to make decisions and simulate human behavior. Yet how closely they mirror human decision-making remains unclear. This gap is critical: misalignment risks harmful outcomes in applications, while failed replication undermines social simulations. We address this by developing a digital twin of game-theoretic experiments and a framework for machine-behavioral evaluation. Testing three models (Llama, Mistral, Qwen), we find Llama reproduces human cooperation patterns with high fidelity, capturing deviations from rational choice theory, while Qwen aligns with Nash equilibrium. We achieved population-level replication without persona-based prompting, simplifying simulation. Beyond the original games, we generate and preregister testable hypotheses for novel configurations. Our findings demonstrate that calibrated LLMs can replicate aggregate human behavioral patterns and enable systematic exploration of unexplored spaces, offering a complementary approach to traditional research that generates new empirical predictions about human social decision-making."
+      },
+      {
+        "name": "Maximilian Kreutner",
+        "aff": "University of Mannheim",
+        "title": "PopulationBench: On the Need for Measuring Large Language Models’ Ability to Model Human Behavior",
+        "abstract": "The rapid evolution of Large Language Models (LLMs) is tracked by diverse benchmarks, yet most focus on technical capabilities like math, coding, or reasoning. This overlooks a critical application: modeling human behavior. Early experiments suggest that LLMs can simulate responses of certain populations in specific settings at a fraction of traditional costs. Yet, the field remains fractured; varying methodologies, and task-specific studies make it difficult to draw generalizable conclusions. While recent efforts like SimBench aim to consolidate these datasets into standardized benchmarks, it remains unclear how to best evaluate which LLMs align well with specific populations across tasks and experimental conditions.\n\nWe argue that measuring an LLM's ability to predict population behavior and attitudes is as important as assessing its technical skills. Continuous evaluation is needed to identify representational biases and guide improvements over time.\n\nWe propose PopulationBench, a standardized benchmark for measuring LLMs’ capabilities to predict population behavior and attitudes. Our approach selects real population responses from datasets such as the German General Social Survey or the GESIS Panel.dbd. Beyond individual-level accuracy and marginal distributions, we include metrics that capture more complex patterns in the generated data. PopulationBench aims to provide a holistic evaluation of models across different simulation contexts and design choices."
+      },
+      {
+        "name": "Nico Mutzner",
+        "aff": "University of Zurich",
+        "title": "Shadowing Humanity: The Limits of Synthetic Replication in Behavioral Experiments",
+        "abstract": "This study evaluates the validity of LLMs as \"synthetic participants\" in social science research by testing their ability to replicate human behavioral data across economics, political science, and psychology. Using GPT-4 class models, we executed synthetic replications of eight experiments covering labor market discrimination, social norm enforcement, distributive justice, and social conformity. Results indicate that LLMs successfully replicate fundamental behaviors such as punishment of free riders, skepticism toward flagged misinformation, and conformity under peer pressure; however, these models often exhibit compressed variance, attenuated discrimination effects, and overly deterministic outputs driven by prompt sensitivity and safety constraints. Significant failures occurred in reproducing complex interactions, such as professional identity salience in honesty tasks and ethnic discrimination in field-experiment settings, where LLM outputs favored stereotypical main effects or hyper-compliance over human-like variability. These results indicate that while LLMs emulate rule-based decision-making, they lack the stochasticity and emotional nuance inherent to human social cognition. Consequently, LLMs serve as effective tools for piloting experimental logic but remain unreliable substitutes for human participants in research requiring deep social cognition or internalized cultural norms."
+      },
+      {
+        "name": "Nicola Milano",
+        "aff": "University of Naples Federico II",
+        "title": "Large Language Models as Simulative Agents for Neurodivergent Adult Psychometric Profiles",
+        "abstract": "Adult neurodivergence, including Attention-Deficit/Hyperactivity Disorder (ADHD), high-functioning Autism Spectrum Disorder (ASD), and Cognitive Disengagement Syndrome (CDS), is marked by substantial symptom overlap that limits the discriminant sensitivity of standard psychometric instruments. While recent work suggests that Large Language Models (LLMs) can simulate human psychometric responses from qualitative data, it remains unclear whether they can accurately and stably model neurodevelopmental traits rather than broad personality characteristics. This study examines whether LLMs can generate psychometric responses that approximate those of real individuals when grounded in a structured qualitative interview, and whether such simulations are sensitive to variations in trait intensity. Two LLMs(GPT-4o and Qwen3-235B-A22B) were prompted to infer an individual psychological profile from open-ended interview content and then respond to each questionnaire in-role. Accuracy, reliability, and sensitivity were assessed using group-level comparisons, error metrics, exact-match scoring, and a randomized baseline. Overall, the findings indicate that interview-grounded LLMs can produce coherent and above-chance simulations of neurodevelopmental traits, supporting their potential use as synthetic participants in early-stage psychometric research, while highlighting clear domain-specific constraints."
+      },
+      {
+        "name": "Noah Schuster",
+        "aff": "University of Bath",
+        "title": "From Human Entrepreneurs to Behavioral Clones: Simulating Entrepreneurial Decision-Making",
+        "abstract": "Business innovations are often driven by SMEs and entrepreneurs operating under high uncertainty. Entrepreneurial decisions involve high-stakes trade-offs and are shaped by biases like overconfidence and control aversion. Yet real-world decisions are complex, context-dependent, and costly to replicate, limiting researchers’ ability to examine counterfactual scenarios and boundary conditions. In line with recent calls to integrate AI into entrepreneurship research, scalable and controlled simulation of entrepreneurial choice scenarios offers a promising complement to traditional survey and field-based methods.\n\nThis project tests whether Centaur (Binz et al., 2025), a foundation model fine-tuned on human decision behavior, can generalize to entrepreneurial decision-making. Specifically, we evaluate whether Centaur reproduces benchmark findings from entrepreneurial choice studies that (1) examine trade-offs under uncertainty, (2) employ discrete choice and conjoint designs, and (3) document robust preference patterns.\n\nPilot simulations in venture financing capture the equity–control trade-off: Centaur reproduces entrepreneurs’ control aversion, reflected in equity premiums for investor control. Simulated magnitudes are smaller than in human data, but preference direction and ranking align with empirical results.\n\nThis work enables controlled simulation of entrepreneurial choices and aids machine behavior research by assessing human–AI alignment in a novel decision domain."
+      },
+      {
+        "name": "Raluca Rilla",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Modeling LLM Pollution in Online Behavioral Studies",
+        "abstract": "Late-accepted poster; abstract pending."
+      },
+      {
+        "name": "Roya Esfandiari",
+        "aff": "BI Norwegian Business School",
+        "title": "Do Large Language Models Share Human Collective Blind Spots? Implications for Using LLMs as Human Participants",
+        "abstract": "Recent advances have prompted growing interest in whether large language models (LLMs) can be used as simulated human participants in social science research. As they are trained on large aggregates of human-generated data, LLMs may parallel human wisdom of crowds. This raises a key question: do they also replicate the limitations of human collective judgment?\n\nWe investigate this in a pilot study using 25 prediction tasks from a TV game show, where a large audience predicts the numerical outcome of experiments with objectively measured ground truth. These tasks are challenging even for crowds, making them well suited for analyzing systematic error. We compare aggregated human predictions to outputs from a multimodal reasoning model (Qwen-3-VL-30B-A3B-thinking). Tasks used both textual descriptions and visual information, allowing the model to integrate cues in a manner more similar to human processing.\n\nOur results show strong correlation between LLM and human crowd error (r = 0.77, p < 0.001), showing both tend to fail on the same questions. Signed errors are even more aligned (r = 0.86, p < 0.001), indicating systematic over- and underestimation on the same questions. Error magnitudes are also comparable (MAE = 0.24 vs. 0.21).\n\nThese findings suggest that LLMs reproduce the blind spots of human collective judgment, placing a fundamental limit on their use as substitutes for human participants when predicting outcomes that human crowds also misjudge."
+      },
+      {
+        "name": "Ruggero Marino Lazzaroni",
+        "aff": "University of Graz",
+        "title": "Cog-Psych-Bench: A Benchmark for Large Language Models Performing Cognitive Psychology Decision Tasks",
+        "abstract": "Large Language Models (LLMs) offer the possibility to simulate psychological experiments to generate hypotheses, estimate effect sizes, or perform experiments that would be too large, expensive, or unethical to run otherwise. Previous work, such as Centaur fine-tuned on Psych-101, has demonstrated the suitability of LLMs for such tasks. However, no systematic benchmark exists that evaluates models for simulating decision making in psychological experiments. Benchmarks are integral to model evaluation in other domains, such as PaperBench for research replication and HealthBench for healthcare. Cognitive science would similarly benefit from a standardized set of tasks to evaluate commonly used models. In our talk, we will pitch Cog-Psych-Bench, actively asking for feedback on task selection and benchmark design. The benchmark has two goals: (1) helping researchers select the best model for simulations of decision-making experiments, and (2) promoting research on model training for experiment simulations by providing a common metric. Our benchmark will leverage a dataset similar to Psych-101, providing an overall score and sub-task scores for different domains. It will include an access-controlled test set to prevent contamination, a public leaderboard, and a validation set. We aim to foster collaboration between social scientists and ML researchers and to increase the rigor and comparability of cognitive science research leveraging LLMs for predictions in decision making."
+      },
+      {
+        "name": "Ryutaro Mori",
+        "aff": "University of Tokyo",
+        "title": "Comparing Cooperative Behavior of Large Language Models and Humans in Voluntary Participation Public Goods Games",
+        "note": "Presenting on behalf of co-author Ilya Horiguchi.",
+        "abstract": "Humans flexibly cooperate by inferring others’ actions and adjusting to the situation. In public goods games, allowing voluntary withdrawal can induce self-selection and raise group-level cooperation. However, most work on large language models (LLMs) as cooperative agents has focused on the prisoner’s dilemma or standard public goods games, leaving their context sensitivity underexplored. We compare multiple LLM agents with human participants in a threshold public goods game while manipulating the threshold level and the availability of withdrawal. Under default settings, LLMs show limited behavioral variation across conditions and, when withdrawal is available, tend to switch uniformly from cooperation to withdrawal. By altering system prompts, we can selectively reproduce distinct behavioral patterns observed in humans. Our results provide a benchmark for human–LLM comparisons and inform modeling and control of human-like cooperation."
+      },
+      {
+        "name": "Tobias Rieger",
+        "aff": "TU Berlin",
+        "title": "Do LLM Agents Exhibit Algorithm Appreciation or Algorithm Aversion?",
+        "abstract": "LLMs are increasingly discussed as potential substitutes for human participants in behavioral experiments, yet it remains unclear how well their responses align with human behavior in paradigms designed to study human decision making. We address this question by using LLMs as participants in two judge–advisor system experiments, treating the model as an experimental subject rather than as a tool. Both studies are direct conceptual replications of established human-subject experiments, one examining algorithm appreciation and one examining the role of advisor expertise. In both experiments, LLMs completed the same tasks and received identical advice as human participants in the original studies. In the first experiment, where humans typically exhibit algorithm appreciation, LLMs instead placed greater weight on human than on algorithmic advice. In the second experiment, LLMs showed a reliance pattern more closely resembling that of human participants, with graded advice use as a function of advisor expertise. Overall, LLMs showed substantially higher advice use than humans. These results indicate systematic divergences between human and LLM behavior and call for methodological caution when using standard LLMs as behavioral proxies."
+      },
+      {
+        "name": "Tsz Kwan Wong",
+        "aff": "University of Warwick",
+        "title": "Human vs. Large Language Model-Based Sampling: Evidence from Large-Scale Replications",
+        "abstract": "Large language models (LLMs) are increasingly used to model human behaviour, yet debate continues over whether they can meaningfully serve as experimental participants. We revisit replication studies from Many labs 2 and Management Science Replication Project using LLMs instead of humans using both direct prompting and silicon sampling. We extend existing silicon sampling approaches (Argyle et al., 2023) by also assigning personas based on psychological traits. In our pilot study focusing on Many Labs 2, we found that modelling participant heterogeneity through silicon sampling substantially increases response variability: the average response variance under silicon sampling is 2.4 times larger than without silicon sampling. We classify a study as replicated when the replication matches the primary study in statistical significance and direction. In ML2 52.9% of primary findings were replicated in human data. Comparing LLM outcomes to ML2, 37.5% of studies showed consistent signals under silicon sampling versus 7.7% under standard prompting. Among ML2-replicated studies, consistency rates were 55.6% with silicon sampling compared to 16.7% without silicon sampling. While silicon sampling somewhat improved LLMs' similarity to human participants, we overall find low consistency between LLMs and ML2 replications, especially for studies that failed to replicate in ML2. Our findings therefore, serve as a cautionary note against directly using LLMs to approximate human participants."
+      },
+      {
+        "name": "Yannik Keller",
+        "aff": "Max Planck Institute for Human Development",
+        "title": "Strategic Communication in Social Deduction Games Through Behavioral Cloning and Reinforcement Learning",
+        "abstract": "Social deduction games (SDGs) represent an especially challenging domain requiring social intelligence, theory of mind, and advanced deceptive and inferential skills. This study investigates whether large language model (LLM)-based agents can be endowed with such capabilities and outperform human SDG experts. We leverage publicly available game records obtained from an online SDG platform to fine-tune a pretrained LLM to imitate human gameplay and communication. We then use these “behavioral clones” to simulate tens of thousands of SDG games to train an LLM-based value model capable of rating the quality of messages and actions.\nIn a first online experiment on a custom SDG platform, we study how human players interact with our behavioral clones and with goal-optimizing agents that combine the behavioral clone and value model via best-of-n sampling. We find that best-of-n sampling shifts the LLM agent's policy towards more deceptive behavior and improves its win rate relative to the raw behavioral clones. However, both artificial agent types remain exploitable by human experts due to a lack of deductive capabilities.\nThus, we further optimize an LLM-based policy in a simulated SDG with behavioral clone players via online reinforcement learning. From this, we hope to learn whether completely new communication strategies can emerge through reward-based training, and we plan to measure their transferability to computer-human interaction in a second online experiment."
+      }
+    ]
+  },
+  {
+    "start": "17:45",
+    "end": "18:15",
+    "what": "Panel — Open Questions and the Future"
+  },
+  {
+    "start": "18:15",
+    "end": "23:59",
+    "what": "BBQ on the institute terrace"
+  }
 ];
 
 function berlinNow() {
@@ -350,15 +681,20 @@ function renderSlot(s, idx) {
   const cls = ['slot', s.invited ? 'invited' : '', `slot-${idx}`].filter(Boolean).join(' ');
   const bodyHtml = hasBody ? `
     <div class="body">
-      ${s.body.map(b => `
-        <div class="item" data-search="${escapeHtml((b.name + ' ' + b.aff + ' ' + (b.title||'')).toLowerCase())}">
+      ${s.body.map(b => {
+        const search = escapeHtml((b.name + ' ' + b.aff + ' ' + (b.title||'') + ' ' + (b.abstract||'')).toLowerCase());
+        const head = `
           <div class="head-line">
             <span class="name">${escapeHtml(b.name)}</span>
             <span class="aff">${escapeHtml(b.aff)}</span>
           </div>
           ${b.title ? `<div class="title">${escapeHtml(b.title)}</div>` : ''}
-          ${b.note ? `<div class="note">${escapeHtml(b.note)}</div>` : ''}
-        </div>`).join('')}
+          ${b.note ? `<div class="note">${escapeHtml(b.note)}</div>` : ''}`;
+        if (b.abstract) {
+          return `<details class="item" data-search="${search}"><summary>${head}</summary><div class="abstract">${escapeHtml(b.abstract)}</div></details>`;
+        }
+        return `<div class="item" data-search="${search}">${head}</div>`;
+      }).join('')}
     </div>` : '';
   const inner = `
     <div class="time">${timeStr}</div>
@@ -462,7 +798,10 @@ function applyFilter() {
     items.forEach(it => {
       const hit = it.dataset.search && it.dataset.search.includes(q);
       it.style.display = hit ? "" : "none";
-      if (hit) slotMatches++;
+      if (hit) {
+        slotMatches++;
+        if (it.tagName === "DETAILS") it.open = true;
+      }
     });
     if (slotMatches > 0) {
       slot.classList.remove("hidden");
